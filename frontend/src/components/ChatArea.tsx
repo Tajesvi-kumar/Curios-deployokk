@@ -231,7 +231,7 @@ export default function ChatArea() {
               flex: 1, borderRadius: '12px', padding: '10px 16px', boxSizing: 'border-box'
             }}
           />
-        <button onClick={sendMessage} disabled={isLoading || !input.trim()} style={{
+        <button onClick={() => sendMessage()} disabled={isLoading || !input.trim()} style={{
           background: '#22c55e', color: 'black', fontWeight: 'bold',
           padding: '10px 20px', borderRadius: '12px', border: 'none',
           cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.5 : 1,
