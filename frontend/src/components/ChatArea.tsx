@@ -70,8 +70,8 @@ export default function ChatArea() {
     }
   }, [])
 
-  const sendMessage = async () => {
-    const text = input.trim()
+  const sendMessage = async (overrideText?: string) => {
+    const text = (overrideText ?? input).trim()
     if (!text || isLoading) return
     setInput('')
     addMessage({ role: 'student', content: text })
@@ -151,7 +151,7 @@ export default function ChatArea() {
             <p style={{ color: '#9ca3af', fontSize: '14px' }}>Tell me a topic you're confused about</p>
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '16px' }}>
               {['Why does hot air rise?', 'What is density?', 'Explain convection'].map(s => (
-                <button key={s} onClick={() => setInput(s)} style={{
+                <button key={s} onClick={() => sendMessage(s)} style={{
                   fontSize: '12px', background: '#1f2937', color: '#d1d5db',
                   border: '1px solid #374151', borderRadius: '9999px',
                   padding: '6px 12px', cursor: 'pointer'
