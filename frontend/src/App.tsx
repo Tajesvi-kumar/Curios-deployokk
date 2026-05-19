@@ -47,22 +47,19 @@ function SetupScreen({ onStart }: { onStart: () => void }) {
     if (prefill) {
       useStore.getState().addMessage({ role: 'student', content: prefill })
     }
-    // Create a Supabase-backed session and use its UUID as sessionId
-    try {
-      const { data } = await axios.post(`${API}/session/create`, {
-        student_name: studentName,
-        student_class: +cls,
-        subject,
-        language,
-      })
-      if (data?.session_id) {
-        setSessionId(data.session_id)
-      }
-    } catch (e) {
-      // Backend down or Supabase error – continue with local random ID
-      console.warn('[CuriOS] session/create failed, using local id', e)
-    }
+    // Start chatbox immediately — don't wait for session/create
     onStart()
+    // Create session in background (non-blocking)
+    axios.post(`${API}/session/create`, {
+      student_name: studentName,
+      student_class: +cls,
+      subject,
+      language,
+    }).then(({ data }) => {
+      if (data?.session_id) setSessionId(data.session_id)
+    }).catch(e => {
+      console.warn('[CuriOS] session/create failed, using local id', e)
+    })
   }
 
   return (
