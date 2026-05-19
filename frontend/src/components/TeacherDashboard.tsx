@@ -476,6 +476,25 @@ export default function TeacherDashboard() {
             >
               Learn Mode →
             </button>
+
+            <button
+              onClick={() => {
+                sessionStorage.removeItem('teacher_auth')
+                window.location.href = '/'
+              }}
+              style={{
+                background: 'rgba(239,68,68,0.1)',
+                color: '#ef4444',
+                fontWeight: 'bold',
+                padding: '8px 14px',
+                borderRadius: '8px',
+                border: '1px solid rgba(239,68,68,0.3)',
+                cursor: 'pointer',
+                fontSize: '13px',
+              }}
+            >
+              Logout
+            </button>
           </div>
         </header>
 
