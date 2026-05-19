@@ -316,25 +316,18 @@ async def call_cerebras(prompt: str, model: str = None) -> str:
 
 
 async def call_ai(prompt: str, model: str = None) -> str:
-    """Main AI call — Cerebras (fastest) → Gemini → Groq → local fallback."""
-    # Cerebras first — ~0.5s response
-    if (CEREBRAS_API_KEY or os.getenv("CEREBRAS_API_KEY", "")).strip():
-        try:
-            return await call_cerebras(prompt, model=model)
-        except Exception as e:
-            print(f"[WARN] Cerebras failed: {e}, trying Gemini")
+    """Main AI call — Groq (fast, free) → Gemini → local fallback."""
+    # Groq first — fast and reliable
+    try:
+        return await call_groq(prompt)
+    except Exception as e:
+        print(f"[WARN] Groq failed: {e}, trying Gemini")
 
     # Gemini fallback
     try:
         return await call_gemini(prompt)
     except Exception as e:
-        print(f"[WARN] Gemini failed: {e}, trying Groq")
-
-    # Groq fallback
-    try:
-        return await call_groq(prompt)
-    except Exception as e:
-        print(f"[WARN] Groq failed: {e}, using local fallback")
+        print(f"[WARN] Gemini failed: {e}, using local fallback")
         return _build_fallback_for_prompt(prompt)
 
 
