@@ -511,7 +511,7 @@ def get_chapter_attempts(session_id: str):
 # ─────────────────────────────────────────────────────────────────────────────
 
 def get_teacher_overview_data():
-    """Fetches high-level class summary metrics — queries Supabase first, falls back to local JSON/memory."""
+    """Fetches high-level class summary metrics — queries Supabase first, falls back and merges with local JSON/memory."""
     sessions = None
     gaps = None
     attempts = None
@@ -531,12 +531,32 @@ def get_teacher_overview_data():
     except Exception as e:
         print(f"[WARN] Supabase fetch in get_teacher_overview_data failed: {e}")
 
+    # Merge sessions
     if sessions is None:
         sessions = LOCAL_SESSIONS
+    else:
+        supabase_ids = {s["id"] for s in sessions}
+        for ls in LOCAL_SESSIONS:
+            if ls["id"] not in supabase_ids:
+                sessions.append(ls)
+
+    # Merge gaps
     if gaps is None:
         gaps = LOCAL_GAPS
+    else:
+        supabase_gap_ids = {g["id"] for g in gaps if "id" in g}
+        for lg in LOCAL_GAPS:
+            if lg.get("id") not in supabase_gap_ids:
+                gaps.append(lg)
+
+    # Merge attempts
     if attempts is None:
         attempts = LOCAL_QUIZ_ATTEMPTS
+    else:
+        supabase_attempt_ids = {a["id"] for a in attempts if "id" in a}
+        for la in LOCAL_QUIZ_ATTEMPTS:
+            if la.get("id") not in supabase_attempt_ids:
+                attempts.append(la)
 
     total_students = len(sessions)
     total_quizzes = len(attempts)
@@ -575,7 +595,7 @@ def get_teacher_overview_data():
     }
 
 def get_all_student_sessions():
-    """Fetches all learning sessions with aggregate counts — queries Supabase first, falls back to local JSON/memory."""
+    """Fetches all learning sessions with aggregate counts — queries Supabase first, falls back and merges with local JSON/memory."""
     sessions = None
     gaps = None
     attempts = None
@@ -595,12 +615,32 @@ def get_all_student_sessions():
     except Exception as e:
         print(f"[WARN] Supabase fetch in get_all_student_sessions failed: {e}")
 
+    # Merge sessions
     if sessions is None:
         sessions = LOCAL_SESSIONS
+    else:
+        supabase_ids = {s["id"] for s in sessions}
+        for ls in LOCAL_SESSIONS:
+            if ls["id"] not in supabase_ids:
+                sessions.append(ls)
+
+    # Merge gaps
     if gaps is None:
         gaps = LOCAL_GAPS
+    else:
+        supabase_gap_ids = {g["id"] for g in gaps if "id" in g}
+        for lg in LOCAL_GAPS:
+            if lg.get("id") not in supabase_gap_ids:
+                gaps.append(lg)
+
+    # Merge attempts
     if attempts is None:
         attempts = LOCAL_QUIZ_ATTEMPTS
+    else:
+        supabase_attempt_ids = {a["id"] for a in attempts if "id" in a}
+        for la in LOCAL_QUIZ_ATTEMPTS:
+            if la.get("id") not in supabase_attempt_ids:
+                attempts.append(la)
 
     sessions = sorted(sessions, key=lambda x: x.get("updated_at") or x.get("created_at") or "", reverse=True)
 
