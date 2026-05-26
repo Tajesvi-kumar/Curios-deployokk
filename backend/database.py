@@ -511,10 +511,32 @@ def get_chapter_attempts(session_id: str):
 # ─────────────────────────────────────────────────────────────────────────────
 
 def get_teacher_overview_data():
-    """Fetches high-level class summary metrics — uses local data when Supabase is unreachable."""
-    sessions = LOCAL_SESSIONS
-    gaps = LOCAL_GAPS
-    attempts = LOCAL_QUIZ_ATTEMPTS
+    """Fetches high-level class summary metrics — queries Supabase first, falls back to local JSON/memory."""
+    sessions = None
+    gaps = None
+    attempts = None
+
+    try:
+        sessions_res = _sb(lambda: supabase.table("sessions").select("*").execute())
+        if sessions_res and sessions_res.data is not None:
+            sessions = sessions_res.data
+            
+            gaps_res = _sb(lambda: supabase.table("gaps").select("*").execute())
+            if gaps_res and gaps_res.data is not None:
+                gaps = gaps_res.data
+                
+            attempts_res = _sb(lambda: supabase.table("quiz_attempts").select("*").execute())
+            if attempts_res and attempts_res.data is not None:
+                attempts = attempts_res.data
+    except Exception as e:
+        print(f"[WARN] Supabase fetch in get_teacher_overview_data failed: {e}")
+
+    if sessions is None:
+        sessions = LOCAL_SESSIONS
+    if gaps is None:
+        gaps = LOCAL_GAPS
+    if attempts is None:
+        attempts = LOCAL_QUIZ_ATTEMPTS
 
     total_students = len(sessions)
     total_quizzes = len(attempts)
@@ -553,10 +575,34 @@ def get_teacher_overview_data():
     }
 
 def get_all_student_sessions():
-    """Fetches all learning sessions with aggregate counts — uses local data when Supabase is unreachable."""
-    sessions = sorted(LOCAL_SESSIONS, key=lambda x: x.get("updated_at", ""), reverse=True)
-    gaps = LOCAL_GAPS
-    attempts = LOCAL_QUIZ_ATTEMPTS
+    """Fetches all learning sessions with aggregate counts — queries Supabase first, falls back to local JSON/memory."""
+    sessions = None
+    gaps = None
+    attempts = None
+
+    try:
+        sessions_res = _sb(lambda: supabase.table("sessions").select("*").execute())
+        if sessions_res and sessions_res.data is not None:
+            sessions = sessions_res.data
+            
+            gaps_res = _sb(lambda: supabase.table("gaps").select("*").execute())
+            if gaps_res and gaps_res.data is not None:
+                gaps = gaps_res.data
+                
+            attempts_res = _sb(lambda: supabase.table("quiz_attempts").select("*").execute())
+            if attempts_res and attempts_res.data is not None:
+                attempts = attempts_res.data
+    except Exception as e:
+        print(f"[WARN] Supabase fetch in get_all_student_sessions failed: {e}")
+
+    if sessions is None:
+        sessions = LOCAL_SESSIONS
+    if gaps is None:
+        gaps = LOCAL_GAPS
+    if attempts is None:
+        attempts = LOCAL_QUIZ_ATTEMPTS
+
+    sessions = sorted(sessions, key=lambda x: x.get("updated_at") or x.get("created_at") or "", reverse=True)
 
     gap_counts = {}
     for g in gaps:
